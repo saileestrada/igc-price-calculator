@@ -71,7 +71,7 @@ function EditableCell({ placeholder, commitValue, width }) {
   const ref = React.useRef()
   const commit = (val) => {
     const parsed = parseFloat(val)
-    if (!isNaN(parsed) && parsed > 0) commitValue(parsed)
+    if (!isNaN(parsed) && parsed >= 0) commitValue(parsed)
   }
   return (
     <input
@@ -174,7 +174,7 @@ export default function App() {
             <input id="target" type="number" min={0} max={60} step={1} value={target} onChange={e => setTarget(parseFloat(e.target.value) || 0)} style={{ width: 54, padding: '4px 8px', fontSize: 13, border: '1px solid #ccc', borderRadius: 6, background: '#fff', textAlign: 'right' }} />
             <span>%</span>
           </div>
-          <div style={{ fontSize: 11, color: '#999' }}>Click any cell under "New price" or "Freight/case" to enter a value. Margins update on exit.</div>
+          <div style={{ fontSize: 11, color: '#999' }}>Click any cell to edit. Press Enter to confirm. Type 0 and press Enter to clear freight.</div>
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -279,6 +279,7 @@ export default function App() {
     </div>
   )
 }
+
 
 
 
