@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import './App.css'
 
 function encodeState(d) {
   try { return btoa(unescape(encodeURIComponent(JSON.stringify(d)))) } catch { return '' }
@@ -103,7 +104,9 @@ export default function App() {
   const ap = activePromo()
 
   const updatePrice = useCallback((id, val) => {
-    setNewPrices(prev => ({ ...prev, [id]: parseFloat(val) || 0 }))
+    const parsed = parseFloat(val)
+    const product = PRODUCTS.find(p => p.id === id)
+    setNewPrices(prev => ({ ...prev, [id]: isNaN(parsed) ? product.currentSell : parsed }))
   }, [])
 
   const updateFreight = useCallback((id, val) => {
@@ -299,8 +302,9 @@ export default function App() {
                           </td>
                           <td style={td('right', { background: '#fafaf8' })}>
                             <input
-                              type="number" step="0.01"
-                              value={sell.toFixed(2)}
+                              type="number" step="0.01" min="0"
+                              placeholder={p.currentSell.toFixed(2)}
+                              value={newPrices[p.id] !== p.currentSell ? newPrices[p.id].toFixed(2) : ''}
                               onChange={e => updatePrice(p.id, e.target.value)}
                               style={{ width: 64, padding: '3px 6px', fontSize: 12, border: '1px solid #ddd', borderRadius: 5, textAlign: 'right', background: '#fff' }}
                             />
@@ -362,4 +366,5 @@ export default function App() {
     </div>
   )
 }
+
 
