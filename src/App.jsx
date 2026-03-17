@@ -24,6 +24,27 @@ const PRODUCTS = [
   { cat: 'P.A.N Flour',  id: 'G-1-01-007', name: 'Harina Mezcla Cachapas 18', sub: '500g · 18/case',  units: 18, igcR: 28.47, igcP: 26.47, trp: 2.59, currentSell: 35.35 },
 ]
 
+
+const REF_DATA = {
+  'P.A.N FLOUR - RETAIL': [
+    { id: 'H1013', name: 'P.A.N Pre Cooked White Cornmeal',       size: '2.2 lb', units: 10, price: 21.13, disc: 2.50, net: 18.63, regUnit: 2.82, promoUnit: 2.48, srpMfr: 3.49, trpMfr: 3.29 },
+    { id: 'H1018', name: 'P.A.N Pre Cooked Yellow Cornmeal',      size: '2.2 lb', units: 10, price: 21.13, disc: 2.50, net: 18.63, regUnit: 2.82, promoUnit: 2.48, srpMfr: 3.49, trpMfr: 3.29 },
+    { id: 'H1101', name: 'P.A.N Pre Cooked Whole Grain Cornmeal', size: '2.2 lb', units: 10, price: 21.13, disc: 2.50, net: 18.63, regUnit: 2.82, promoUnit: 2.48, srpMfr: 3.49, trpMfr: 3.29 },
+    { id: 'H1016', name: 'P.A.N Pre Cooked White Cornmeal',       size: '5 lb',   units: 4,  price: 17.88, disc: 2.00, net: 15.88, regUnit: 5.96, promoUnit: 5.29, srpMfr: 7.59, trpMfr: 6.99 },
+    { id: 'H1023', name: 'P.A.N Pre Cooked Yellow Cornmeal',      size: '5 lb',   units: 4,  price: 17.88, disc: 2.00, net: 15.88, regUnit: 5.96, promoUnit: 5.29, srpMfr: 7.59, trpMfr: 6.99 },
+    { id: 'H1021', name: 'P.A.N Sweet Corn Mix',                  size: '1.1 lb', units: 18, price: 28.47, disc: 2.00, net: 26.47, regUnit: 2.11, promoUnit: 1.96, srpMfr: 3.49, trpMfr: 2.59 },
+    { id: 'H1028', name: 'P.A.N Pre Cooked White Cornmeal',       size: '1.1 lb', units: 18, price: 20.37, disc: 3.00, net: 17.37, regUnit: 1.51, promoUnit: 1.29, srpMfr: 3.49, trpMfr: 1.79 },
+  ],
+  'MALT BEVERAGE / MALTIN POLAR': [
+    { id: 'MP1101', name: 'Maltin Polar Bottles 6-Pack',  size: '7 oz',  units: 4,  price: 13.83, disc: 2.00, net: 11.83, regUnit: 4.61, promoUnit: 3.94, srpMfr: 5.49, trpMfr: 5.29 },
+    { id: 'MP1102', name: 'Maltin Polar Bottles 6-Pack',  size: '12 oz', units: 4,  price: 18.30, disc: 3.00, net: 15.30, regUnit: 6.10, promoUnit: 5.10, srpMfr: 6.97, trpMfr: 6.79 },
+    { id: 'MP1103', name: 'Maltin Polar Cans Loose',      size: '12 oz', units: 24, price: 16.21, disc: 2.00, net: 14.21, regUnit: 0.90, promoUnit: 0.79, srpMfr: 1.10, trpMfr: 1.09 },
+    { id: 'MP1104', name: 'Maltin Polar Bottles Loose',   size: '12 oz', units: 24, price: 17.61, disc: 1.50, net: 16.11, regUnit: 0.98, promoUnit: 0.89, srpMfr: 1.20, trpMfr: 1.19 },
+    { id: 'MP1105', name: 'Maltin Polar Cans 6-Pack',     size: '12 oz', units: 4,  price: 16.77, disc: 3.00, net: 13.77, regUnit: 5.59, promoUnit: 4.59, srpMfr: 6.39, trpMfr: 6.19 },
+    { id: 'MP1107', name: 'Maltin Polar Bottles 8-Pack',  size: '7 oz',  units: 3,  price: 13.37, disc: 3.00, net: 10.37, regUnit: 5.94, promoUnit: 4.61, srpMfr: 6.79, trpMfr: 5.49 },
+  ],
+}
+
 function encodeState(d) {
   try { return btoa(unescape(encodeURIComponent(JSON.stringify(d)))) } catch { return '' }
 }
@@ -106,6 +127,7 @@ export default function App() {
     const saved = getStateFromUrl()
     return saved?.target ?? 20
   })
+  const [tab, setTab] = useState('calculator')
   const [copied, setCopied] = useState(false)
 
   useEffect(() => { setStateInUrl({ prices: newPrices, freight, target }) }, [newPrices, freight, target])
@@ -153,6 +175,57 @@ export default function App() {
             {copied ? '✓ Copied!' : 'Share link'}
           </button>
         </div>
+
+        <div style={{ display: 'flex', gap: 0, borderBottom: '1.5px solid #e0dfd9', marginBottom: 20 }}>
+          {['calculator', 'reference'].map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{ padding: '8px 18px', fontSize: 13, fontWeight: 500, background: 'none', border: 'none', borderBottom: tab === t ? '2px solid #1a1a1a' : '2px solid transparent', color: tab === t ? '#1a1a1a' : '#888', cursor: 'pointer', marginBottom: -1.5, transition: 'all 0.15s' }}>
+              {t === 'calculator' ? 'Price Calculator' : 'IGC Pricelist Reference'}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'reference' && (
+          <div style={{ background: '#fff', borderRadius: 10, overflow: 'hidden', border: '1px solid #e0dfd9' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 820, fontSize: 12 }}>
+                <thead>
+                  <tr>
+                    {['IGC ID','Description','Size','Units/case','Price/case','BB Disc','Net Promo/case','Reg Unit cost','Promo Unit cost','SRP Mfr','TRP Mfr'].map(h => (
+                      <th key={h} style={{ padding: '6px 10px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#666', textAlign: (h==='IGC ID'||h==='Description') ? 'left' : 'right', borderBottom: '1px solid #ddd', whiteSpace: 'nowrap', background: '#fafaf8' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(REF_DATA).map(([cat, rows]) => (
+                    <React.Fragment key={cat}>
+                      <tr><td colSpan={11} style={{ padding: '10px 10px 4px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#999', background: '#f9f8f5', borderTop: '1px solid #e8e7e2' }}>{cat}</td></tr>
+                      {rows.map(r => (
+                        <tr key={r.id} style={{ borderTop: '1px solid #f0efe9' }}>
+                          <td style={{ padding: '7px 10px', fontFamily: 'monospace', fontSize: 11, color: '#999' }}>{r.id}</td>
+                          <td style={{ padding: '7px 10px', color: '#1a1a1a' }}>{r.name}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', color: '#555' }}>{r.size}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', color: '#555' }}>{r.units}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', color: '#444' }}>${r.price.toFixed(2)}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', color: '#888' }}>${r.disc.toFixed(2)}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', background: '#f0efea', color: '#444' }}>${r.net.toFixed(2)}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', color: '#444' }}>${r.regUnit.toFixed(2)}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', background: '#ddeaf8', color: '#185FA5' }}>${r.promoUnit.toFixed(2)}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', color: '#555' }}>${r.srpMfr.toFixed(2)}</td>
+                          <td style={{ padding: '7px 10px', textAlign: 'right', color: '#185FA5' }}>${r.trpMfr.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ padding: '10px 14px', fontSize: 11, color: '#aaa', borderTop: '1px solid #f0efe9' }}>
+              Source: IGC Promotions 2026 — Distributor EXW pricelist. BB Disc = open stock discount per case. Net promo/case = price minus discount. Unit costs at 75% outgoing margin basis per IGC formula.
+            </div>
+          </div>
+        )}
+
+        {tab === 'calculator' && <React.Fragment>
 
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>2026 Promotion Windows</div>
@@ -275,10 +348,14 @@ export default function App() {
           Price @ target uses base IGC regular cost (no freight). Freight adds to landed cost in both scenarios. TRP = manufacturer promotional target retail price per unit. Lift = margin pp gain switching from regular to promo landed cost.
         </div>
 
+        </React.Fragment>}
+
       </div>
     </div>
   )
 }
+
+
 
 
 
