@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import './App.css'
 
 function encodeState(d) {
@@ -63,7 +63,40 @@ function Badge({ pct }) {
   )
 }
 
-function MetricCard({ val, label, accent }) {
+function EditableCell({ value, placeholder, onCommit, width = 64 }) {
+  const [local, setLocal] = useState('')
+  const [focused, setFocused] = useState(false)
+  const ref = useRef()
+
+  const handleFocus = () => {
+    setLocal('')
+    setFocused(true)
+  }
+  const handleBlur = () => {
+    setFocused(false)
+    const parsed = parseFloat(local)
+    if (!isNaN(parsed) && parsed > 0) onCommit(parsed)
+    setLocal('')
+  }
+  const handleChange = e => setLocal(e.target.value)
+
+  return (
+    <input
+      ref={ref}
+      type="number"
+      step="0.01"
+      min="0"
+      placeholder={placeholder}
+      value={focused ? local : ''}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      style={{ width, padding: '3px 6px', fontSize: 12, border: '1px solid #ddd', borderRadius: 5, textAlign: 'right', background: '#fff' }}
+    />
+  )
+}
+
+
   return (
     <div style={{
       background: accent ? '#E6F1FB' : '#eeede8',
@@ -104,13 +137,11 @@ export default function App() {
   const ap = activePromo()
 
   const updatePrice = useCallback((id, val) => {
-    const parsed = parseFloat(val)
-    const product = PRODUCTS.find(p => p.id === id)
-    setNewPrices(prev => ({ ...prev, [id]: isNaN(parsed) ? product.currentSell : parsed }))
+    setNewPrices(prev => ({ ...prev, [id]: val }))
   }, [])
 
   const updateFreight = useCallback((id, val) => {
-    setFreight(prev => ({ ...prev, [id]: parseFloat(val) || 0 }))
+    setFreight(prev => ({ ...prev, [id]: val }))
   }, [])
   const cats = {}
   PRODUCTS.forEach(p => { if (!cats[p.cat]) cats[p.cat] = []; cats[p.cat].push(p) })
@@ -301,12 +332,11 @@ export default function App() {
                             ${p.currentSell.toFixed(2)}
                           </td>
                           <td style={td('right', { background: '#fafaf8' })}>
-                            <input
-                              type="number" step="0.01" min="0"
-                              placeholder={p.currentSell.toFixed(2)}
-                              value={newPrices[p.id] !== p.currentSell ? newPrices[p.id].toFixed(2) : ''}
-                              onChange={e => updatePrice(p.id, e.target.value)}
-                              style={{ width: 64, padding: '3px 6px', fontSize: 12, border: '1px solid #ddd', borderRadius: 5, textAlign: 'right', background: '#fff' }}
+                            <EditableCell
+                              value={sell}
+                              placeholder={sell.toFixed(2)}
+                              onCommit={val => updatePrice(p.id, val)}
+                              width={64}
                             />
                           </td>
                           <td style={td('right', { background: '#f0efea' })}>
@@ -332,12 +362,11 @@ export default function App() {
                           </td>
                           <td style={{ width: 6 }}></td>
                           <td style={td('right', { background: '#edecea' })}>
-                            <input
-                              type="number" step="0.01" min="0"
-                              placeholder="0.00"
-                              value={fr > 0 ? fr.toFixed(2) : ''}
-                              onChange={e => updateFreight(p.id, e.target.value)}
-                              style={{ width: 60, padding: '3px 6px', fontSize: 12, border: '1px solid #ccc', borderRadius: 5, textAlign: 'right', background: '#fff' }}
+                            <EditableCell
+                              value={fr}
+                              placeholder={fr > 0 ? fr.toFixed(2) : '0.00'}
+                              onCommit={val => updateFreight(p.id, val)}
+                              width={60}
                             />
                           </td>
                           <td style={td('center')}>
@@ -366,5 +395,6 @@ export default function App() {
     </div>
   )
 }
+
 
 
