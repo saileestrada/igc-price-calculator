@@ -37,7 +37,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
