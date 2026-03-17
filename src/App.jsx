@@ -299,7 +299,7 @@ export default function App() {
                           </td>
                           <td style={td('right', { background: '#fafaf8' })}>
                             <input
-                              type="number" step="0.01"
+                              type="text" inputMode="decimal"
                               value={sell.toFixed(2)}
                               onChange={e => updatePrice(p.id, e.target.value)}
                               style={{ width: 64, padding: '3px 6px', fontSize: 12, border: '1px solid #ddd', borderRadius: 5, textAlign: 'right', background: '#fff' }}
@@ -329,7 +329,7 @@ export default function App() {
                           <td style={{ width: 6 }}></td>
                           <td style={td('right', { background: '#edecea' })}>
                             <input
-                              type="number" step="0.01" min="0"
+                              type="text" inputMode="decimal"
                               placeholder="0.00"
                               value={fr > 0 ? fr.toFixed(2) : ''}
                               onChange={e => updateFreight(p.id, e.target.value)}
@@ -362,3 +362,4 @@ export default function App() {
     </div>
   )
 }
+
