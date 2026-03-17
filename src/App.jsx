@@ -68,21 +68,26 @@ function MetricCard({ val, label, accent }) {
 function EditableCell({ placeholder, commitValue, width }) {
   const [local, setLocal] = useState('')
   const [focused, setFocused] = useState(false)
+  const ref = React.useRef()
+  const commit = (val) => {
+    const parsed = parseFloat(val)
+    if (!isNaN(parsed) && parsed > 0) commitValue(parsed)
+  }
   return (
     <input
+      ref={ref}
       type="number"
       step="0.01"
       min="0"
       placeholder={placeholder}
       value={focused ? local : ''}
       onFocus={() => { setLocal(''); setFocused(true) }}
-      onBlur={() => {
-        setFocused(false)
-        const parsed = parseFloat(local)
-        if (!isNaN(parsed) && parsed > 0) commitValue(parsed)
-        setLocal('')
-      }}
+      onBlur={() => { setFocused(false); commit(local); setLocal('') }}
       onChange={e => setLocal(e.target.value)}
+      onKeyDown={e => {
+        if (e.key === 'Enter') { commit(local); ref.current.blur() }
+        if (e.key === 'Escape') { setLocal(''); ref.current.blur() }
+      }}
       style={{ width, padding: '3px 6px', fontSize: 12, border: '1px solid #ddd', borderRadius: 5, textAlign: 'right', background: '#fff', fontFamily: 'inherit' }}
     />
   )
