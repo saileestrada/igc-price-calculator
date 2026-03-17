@@ -1,4 +1,19 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+
+function encodeState(d) {
+  try { return btoa(unescape(encodeURIComponent(JSON.stringify(d)))) } catch { return '' }
+}
+function decodeState(s) {
+  try { return JSON.parse(decodeURIComponent(escape(atob(s)))) } catch { return null }
+}
+function getStateFromUrl() {
+  const p = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const s = p.get('s')
+  return s ? decodeState(s) : null
+}
+function setStateInUrl(d) {
+  window.location.hash = 's=' + encodeState(d)
+}
 
 const PROMOS = [
   { name: 'BFY',               start: '2026-01-05', end: '2026-02-27' },
@@ -60,9 +75,30 @@ function MetricCard({ val, label, accent }) {
 }
 
 export default function App() {
-  const [newPrices, setNewPrices] = useState(() => Object.fromEntries(PRODUCTS.map(p => [p.id, p.currentSell])))
-  const [freight, setFreight] = useState(() => Object.fromEntries(PRODUCTS.map(p => [p.id, 0])))
-  const [target, setTarget] = useState(20)
+  const [newPrices, setNewPrices] = useState(() => {
+    const saved = getStateFromUrl()
+    return saved?.prices ?? Object.fromEntries(PRODUCTS.map(p => [p.id, p.currentSell]))
+  })
+  const [freight, setFreight] = useState(() => {
+    const saved = getStateFromUrl()
+    return saved?.freight ?? Object.fromEntries(PRODUCTS.map(p => [p.id, 0]))
+  })
+  const [target, setTarget] = useState(() => {
+    const saved = getStateFromUrl()
+    return saved?.target ?? 20
+  })
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    setStateInUrl({ prices: newPrices, freight, target })
+  }, [newPrices, freight, target])
+
+  const shareLink = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    })
+  }
 
   const ap = activePromo()
 
@@ -73,7 +109,6 @@ export default function App() {
   const updateFreight = useCallback((id, val) => {
     setFreight(prev => ({ ...prev, [id]: parseFloat(val) || 0 }))
   }, [])
-
   const cats = {}
   PRODUCTS.forEach(p => { if (!cats[p.cat]) cats[p.cat] = []; cats[p.cat].push(p) })
 
@@ -120,16 +155,31 @@ export default function App() {
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
         {/* Header */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
-            Tany Foods
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+              Tany Foods
+            </div>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1a1a1a', marginBottom: 2 }}>
+              IGC Promo Price Calculator 2026
+            </h1>
+            <p style={{ fontSize: 12, color: '#888' }}>
+              Vendor incentive scenario tool — flour &amp; Maltin Polar lines
+            </p>
           </div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1a1a1a', marginBottom: 2 }}>
-            IGC Promo Price Calculator 2026
-          </h1>
-          <p style={{ fontSize: 12, color: '#888' }}>
-            Vendor incentive scenario tool — flour &amp; Maltin Polar lines
-          </p>
+          <button
+            onClick={shareLink}
+            style={{
+              padding: '8px 16px', fontSize: 13, fontWeight: 500,
+              border: '1px solid ' + (copied ? '#3B6D11' : '#ccc'),
+              borderRadius: 7, cursor: 'pointer',
+              background: copied ? '#EAF3DE' : '#fff',
+              color: copied ? '#27500A' : '#444',
+              transition: 'all 0.2s', whiteSpace: 'nowrap', marginTop: 4
+            }}
+          >
+            {copied ? '✓ Copied!' : 'Share link'}
+          </button>
         </div>
 
         {/* Promo windows */}
